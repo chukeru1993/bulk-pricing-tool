@@ -3,17 +3,13 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const apiRouter = require('./routes/api');
-const config = require('./utils/config');
 
 const app = express();
 const PORT = 3000;
 
 function getLogDir() {
-  try {
-    return config.getLogsPath();
-  } catch (e) {
-    return path.join(__dirname, '..', '..', 'logs');
-  }
+  const config = require('./utils/config');
+  return config.getLogsPath();
 }
 
 function writeLog(msg) {
@@ -28,7 +24,7 @@ function writeLog(msg) {
   console.log(msg);
 }
 
-writeLog('Starting server...');
+writeLog('=== Server starting ===');
 
 app.use(cors());
 app.use(express.json());
@@ -46,26 +42,18 @@ try {
   server = app.listen(PORT, '0.0.0.0', () => {
     writeLog(`Server running on port ${PORT}`);
     writeLog(`Log path: ${getLogDir()}`);
+    writeLog(`Config path: ${require('./utils/config').getConfigPath()}`);
   });
 } catch (err) {
-  writeLog(`Failed to start server: ${err.message}`);
+  writeLog(`FATAL: Failed to start server: ${err.message}`);
 }
 
-process.on('SIGTERM', () => {
-  writeLog('SIGTERM received, closing server');
-  if (server) {
-    server.close(() => {
-      writeLog('Server closed');
-    });
-  }
-});
-
 process.on('uncaughtException', (err) => {
-  writeLog(`Uncaught Exception: ${err.message}`);
+  writeLog(`FATAL: Uncaught Exception: ${err.message}`);
 });
 
 process.on('unhandledRejection', (reason, promise) => {
-  writeLog(`Unhandled Rejection: ${reason}`);
+  writeLog(`FATAL: Unhandled Rejection: ${reason}`);
 });
 
 module.exports = server;

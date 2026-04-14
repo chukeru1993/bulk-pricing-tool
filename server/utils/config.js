@@ -1,25 +1,22 @@
 const fs = require('fs');
 const path = require('path');
 
-let configPath;
-let isDev = false;
-
-function init(userDataPath, devMode) {
-  configPath = path.join(userDataPath, 'config.json');
-  isDev = devMode;
+function getAppPath() {
+  try {
+    const { app } = require('electron');
+    if (app && app.isPackaged) {
+      return path.dirname(app.getPath('exe'));
+    }
+  } catch (e) {}
+  return path.join(__dirname, '..', '..');
 }
 
 function getConfigPath() {
-  if (configPath) return configPath;
-  return path.join(__dirname, '..', '..', 'config.json');
+  return path.join(getAppPath(), 'config.json');
 }
 
 function getLogsPath() {
-  if (isDev) {
-    return path.join(__dirname, '..', '..', 'logs');
-  }
-  const userDataPath = path.dirname(getConfigPath());
-  return path.join(userDataPath, 'logs');
+  return path.join(getAppPath(), 'logs');
 }
 
 const defaultConfig = {
@@ -71,7 +68,6 @@ function updateConfig(newConfig) {
 }
 
 module.exports = {
-  init,
   getConfig,
   updateConfig,
   loadConfig,

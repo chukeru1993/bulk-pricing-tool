@@ -4,10 +4,6 @@ const path = require('path');
 let mainWindow;
 let expressServer;
 
-function getUserDataPath() {
-  return app.getPath('userData');
-}
-
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
@@ -57,23 +53,17 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  console.log('=== BulkPricingTool Starting ===');
+  console.log('App path:', app.getAppPath());
+  console.log('isPackaged:', app.isPackaged);
+
   try {
-    const userDataPath = getUserDataPath();
-    const isDev = !app.isPackaged;
-
-    process.env.BULK_PRICING_USER_DATA = userDataPath;
-    process.env.BULK_PRICING_IS_DEV = isDev ? 'true' : 'false';
-
-    const config = require('../server/utils/config');
-    config.init(userDataPath, isDev);
-
     const serverPath = path.join(__dirname, '..', 'server', 'index.js');
+    console.log('Loading server from:', serverPath);
     expressServer = require(serverPath);
-    console.log('Express server started');
-    console.log('User data path:', userDataPath);
-    console.log('Is dev:', isDev);
+    console.log('Server started successfully');
   } catch (err) {
-    console.error('Failed to start Express server:', err);
+    console.error('Failed to start server:', err);
   }
 
   createWindow();
