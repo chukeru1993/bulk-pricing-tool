@@ -7,7 +7,7 @@
   "scripts": {
     "start": "electron .",
     "server": "node server/index.js",
-    "build": "electron-builder --win --dir"
+    "build": "electron-builder --win"
   },
   "build": {
     "appId": "com.example.bulkpricingtool",
@@ -26,10 +26,6 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
-        },
-        {
-          "target": "portable",
           "arch": ["x64"]
         }
       ]
