@@ -1,7 +1,26 @@
 const fs = require('fs');
 const path = require('path');
 
-const configPath = path.join(__dirname, '..', '..', 'config.json');
+let configPath;
+let isDev = false;
+
+function init(userDataPath, devMode) {
+  configPath = path.join(userDataPath, 'config.json');
+  isDev = devMode;
+}
+
+function getConfigPath() {
+  if (configPath) return configPath;
+  return path.join(__dirname, '..', '..', 'config.json');
+}
+
+function getLogsPath() {
+  if (isDev) {
+    return path.join(__dirname, '..', '..', 'logs');
+  }
+  const userDataPath = path.dirname(getConfigPath());
+  return path.join(userDataPath, 'logs');
+}
 
 const defaultConfig = {
   server: 'localhost',
@@ -14,9 +33,10 @@ const defaultConfig = {
 };
 
 function loadConfig() {
+  const cfgPath = getConfigPath();
   try {
-    if (fs.existsSync(configPath)) {
-      const data = fs.readFileSync(configPath, 'utf8');
+    if (fs.existsSync(cfgPath)) {
+      const data = fs.readFileSync(cfgPath, 'utf8');
       return JSON.parse(data);
     }
   } catch (error) {
@@ -26,8 +46,13 @@ function loadConfig() {
 }
 
 function saveConfig(config) {
+  const cfgPath = getConfigPath();
   try {
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf8');
+    const dir = path.dirname(cfgPath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(cfgPath, JSON.stringify(config, null, 2), 'utf8');
     return true;
   } catch (error) {
     console.error('Failed to save config:', error);
@@ -46,8 +71,11 @@ function updateConfig(newConfig) {
 }
 
 module.exports = {
+  init,
   getConfig,
   updateConfig,
   loadConfig,
-  saveConfig
+  saveConfig,
+  getConfigPath,
+  getLogsPath
 };

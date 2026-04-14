@@ -1,41 +1,71 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 const apiRouter = require('./routes/api');
-const logger = require('./utils/logger');
+const config = require('./utils/config');
 
 const app = express();
 const PORT = 3000;
+
+function getLogDir() {
+  try {
+    return config.getLogsPath();
+  } catch (e) {
+    return path.join(__dirname, '..', '..', 'logs');
+  }
+}
+
+function writeLog(msg) {
+  const timestamp = new Date().toISOString();
+  const logMsg = `${timestamp} - ${msg}\n`;
+  const logDir = getLogDir();
+  if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir, { recursive: true });
+  }
+  const logFile = path.join(logDir, 'server.log');
+  fs.appendFileSync(logFile, logMsg);
+  console.log(msg);
+}
+
+writeLog('Starting server...');
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '..', 'src')));
 
 app.use((req, res, next) => {
-  logger.info(`${req.method} ${req.url}`);
+  writeLog(`${req.method} ${req.url}`);
   next();
 });
 
 app.use('/api', apiRouter);
 
-const server = app.listen(PORT, () => {
-  logger.info(`Server running on port ${PORT}`);
-});
+let server;
+try {
+  server = app.listen(PORT, '0.0.0.0', () => {
+    writeLog(`Server running on port ${PORT}`);
+    writeLog(`Log path: ${getLogDir()}`);
+  });
+} catch (err) {
+  writeLog(`Failed to start server: ${err.message}`);
+}
 
 process.on('SIGTERM', () => {
-  logger.info('SIGTERM received, closing server');
-  server.close(() => {
-    logger.info('Server closed');
-  });
+  writeLog('SIGTERM received, closing server');
+  if (server) {
+    server.close(() => {
+      writeLog('Server closed');
+    });
+  }
 });
 
 process.on('uncaughtException', (err) => {
-  logger.error('Uncaught Exception:', err);
-  process.exit(1);
+  writeLog(`Uncaught Exception: ${err.message}`);
 });
 
 process.on('unhandledRejection', (reason, promise) => {
-  logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  writeLog(`Unhandled Rejection: ${reason}`);
 });
 
 module.exports = server;
