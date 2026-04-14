@@ -1,0 +1,9 @@
+{
+  "server": "localhost",
+  "database": "BulkPricingDB",
+  "user": "sa",
+  "password": "YourStrong@Passw0rd",
+  "port": 1433,
+  "encrypt": false,
+  "trustServerCertificate": true
+}
