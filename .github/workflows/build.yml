@@ -19,17 +19,13 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: |
-          cd bulk-pricing-tool
-          npm install
+        run: npm install
 
       - name: Build Electron app
-        run: |
-          cd bulk-pricing-tool
-          npm run build
+        run: npm run build
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: windows-x64
-          path: bulk-pricing-tool/dist/
+          path: dist/
