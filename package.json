@@ -2,11 +2,12 @@
   "name": "bulk-pricing-tool",
   "version": "1.0.0",
   "description": "批量导入项目调价工具",
+  "author": "chukeru",
   "main": "electron/main.js",
   "scripts": {
     "start": "electron .",
     "server": "node server/index.js",
-    "build": "electron-builder --win"
+    "build": "electron-builder --win --dir"
   },
   "build": {
     "appId": "com.example.bulkpricingtool",
@@ -37,7 +38,8 @@
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true
-    }
+    },
+    "publish": null
   },
   "dependencies": {
     "cors": "^2.8.5",
