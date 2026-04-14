@@ -10,6 +10,7 @@ function createWindow() {
     height: 800,
     minWidth: 800,
     minHeight: 600,
+    show: false,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true
@@ -17,6 +18,10 @@ function createWindow() {
   });
 
   mainWindow.loadFile(path.join(__dirname, '..', 'src', 'index.html'));
+
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show();
+  });
 
   const menu = Menu.buildFromTemplate([
     {
@@ -48,8 +53,14 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
-  const serverPath = path.join(__dirname, '..', 'server', 'index.js');
-  expressServer = require(serverPath);
+  try {
+    const serverPath = path.join(__dirname, '..', 'server', 'index.js');
+    expressServer = require(serverPath);
+    console.log('Express server started');
+  } catch (err) {
+    console.error('Failed to start Express server:', err);
+  }
+
   createWindow();
 });
 
