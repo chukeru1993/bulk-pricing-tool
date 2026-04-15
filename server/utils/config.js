@@ -1,13 +1,26 @@
 const fs = require('fs');
 const path = require('path');
 
+const isPackaged = process.env.BULK_PRICING_IS_PACKAGED === 'true';
+const userDataPath = process.env.BULK_PRICING_USER_DATA || null;
 const appPath = process.env.BULK_PRICING_APP_PATH || path.join(__dirname, '..', '..');
 
+function getUserDataDir() {
+  if (userDataPath) return userDataPath;
+  return appPath;
+}
+
 function getConfigPath() {
+  if (isPackaged && userDataPath) {
+    return path.join(userDataPath, 'config.json');
+  }
   return path.join(appPath, 'config.json');
 }
 
 function getLogsPath() {
+  if (isPackaged && userDataPath) {
+    return path.join(userDataPath, 'logs');
+  }
   return path.join(appPath, 'logs');
 }
 
@@ -65,5 +78,6 @@ module.exports = {
   loadConfig,
   saveConfig,
   getConfigPath,
-  getLogsPath
+  getLogsPath,
+  getUserDataDir
 };

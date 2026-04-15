@@ -37,7 +37,12 @@ app.whenReady().then(() => {
   try {
     serverProcess = fork(serverPath, [], {
       stdio: 'inherit',
-      env: { ...process.env, BULK_PRICING_APP_PATH: app.getAppPath() }
+      env: {
+        ...process.env,
+        BULK_PRICING_APP_PATH: app.getAppPath(),
+        BULK_PRICING_USER_DATA: app.getPath('userData'),
+        BULK_PRICING_IS_PACKAGED: app.isPackaged ? 'true' : 'false'
+      }
     });
 
     serverProcess.on('error', (err) => {
