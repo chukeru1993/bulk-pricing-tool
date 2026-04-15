@@ -1,13 +1,41 @@
 let currentAddBatchId = null;
+let attrDictItems = [];
+
+async function loadAttrDict() {
+  try {
+    attrDictItems = await api.getAttrDict();
+  } catch (e) {
+    console.error('加载归属字典失败:', e);
+    attrDictItems = [];
+  }
+}
+
+function buildAttrOptions(selectedCode) {
+  let html = '<option value="">-- 请选择 --</option>';
+  attrDictItems.forEach(item => {
+    const selected = item.code === selectedCode ? ' selected' : '';
+    html += `<option value="${item.code}"${selected}>${item.name}</option>`;
+  });
+  return html;
+}
 
 document.getElementById('add-batch-select').onchange = async (e) => {
   currentAddBatchId = e.target.value ? parseInt(e.target.value) : null;
   if (currentAddBatchId) {
+    if (attrDictItems.length === 0) {
+      await loadAttrDict();
+    }
     await loadAddItems();
+  } else {
+    document.querySelector('#add-table tbody').innerHTML = '';
   }
 };
 
 document.getElementById('add-import').onclick = () => {
+  if (!currentAddBatchId) {
+    showToast('请先选择批次', 'error');
+    return;
+  }
   document.getElementById('add-file-input').click();
 };
 
@@ -77,7 +105,11 @@ async function loadAddItems() {
   }
 }
 
-function renderAddTable(items) {
+async function renderAddTable(items) {
+  if (attrDictItems.length === 0) {
+    await loadAttrDict();
+  }
+
   const tbody = document.querySelector('#add-table tbody');
   tbody.innerHTML = '';
 
@@ -87,8 +119,8 @@ function renderAddTable(items) {
       <td><input type="text" class="editable" value="${item.ProjectCode || ''}"></td>
       <td><input type="text" class="editable" value="${item.ProjectName || ''}"></td>
       <td><input type="text" class="editable" value="${item.ExecuteDept || ''}"></td>
-      <td><input type="text" class="editable" value="${item.OutpatientAttr || ''}"></td>
-      <td><input type="text" class="editable" value="${item.InpatientAttr || ''}"></td>
+      <td><select class="editable">${buildAttrOptions(item.OutpatientAttr)}</select></td>
+      <td><select class="editable">${buildAttrOptions(item.InpatientAttr)}</select></td>
       <td><input type="text" class="editable" value="${item.ProvincePrice || ''}"></td>
       <td><input type="text" class="editable" value="${item.CityPrice || ''}"></td>
       <td><input type="text" class="editable" value="${item.CountyPrice || ''}"></td>
@@ -105,23 +137,26 @@ function getAddItemsFromTable() {
   const items = [];
   document.querySelectorAll('#add-table tbody tr').forEach(row => {
     const inputs = row.querySelectorAll('input');
+    const selects = row.querySelectorAll('select');
     const projectCode = inputs[0].value.trim();
     if (projectCode) {
       items.push({
         ProjectCode: projectCode,
         ProjectName: inputs[1].value.trim(),
         ExecuteDept: inputs[2].value.trim(),
-        OutpatientAttr: inputs[3].value.trim(),
-        InpatientAttr: inputs[4].value.trim(),
-        ProvincePrice: parseFloat(inputs[5].value) || 0,
-        CityPrice: parseFloat(inputs[6].value) || 0,
-        CountyPrice: parseFloat(inputs[7].value) || 0,
-        Price: parseFloat(inputs[8].value) || 0,
-        PricingUnit: inputs[9].value.trim(),
-        Spec: inputs[10].value.trim(),
-        Model: inputs[11].value.trim()
+        OutpatientAttr: selects[0].value,
+        InpatientAttr: selects[1].value,
+        ProvincePrice: parseFloat(inputs[3].value) || 0,
+        CityPrice: parseFloat(inputs[4].value) || 0,
+        CountyPrice: parseFloat(inputs[5].value) || 0,
+        Price: parseFloat(inputs[6].value) || 0,
+        PricingUnit: inputs[7].value.trim(),
+        Spec: inputs[8].value.trim(),
+        Model: inputs[9].value.trim()
       });
     }
   });
   return items;
 }
+
+loadAttrDict();

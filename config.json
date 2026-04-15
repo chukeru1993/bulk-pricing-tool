@@ -1,6 +1,6 @@
 {
   "server": "localhost",
-  "database": "BulkPricingDB",
+  "database": "jc",
   "user": "sa",
   "password": "YourStrong@Passw0rd",
   "port": 1433,

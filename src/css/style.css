@@ -315,3 +315,15 @@ input[type="text"].editable {
   padding: 5px;
   width: 100%;
 }
+
+.data-table .col-wide {
+  min-width: 180px;
+}
+
+select.editable {
+  border: 1px solid #ddd;
+  padding: 5px;
+  width: 100%;
+  font-size: 14px;
+  background: #fff;
+}

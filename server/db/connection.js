@@ -69,9 +69,32 @@ function resetPool() {
   close();
 }
 
+async function queryOnDatabase(sql, params = [], databaseName = null) {
+  let targetPool;
+  let shouldClose = false;
+  if (databaseName) {
+    const cfg = getDbConfig();
+    const crossDbConfig = { ...cfg, database: databaseName };
+    targetPool = await mssql.connect(crossDbConfig);
+    shouldClose = true;
+  } else {
+    targetPool = await getConnection();
+  }
+  const request = targetPool.request();
+  params.forEach((param, index) => {
+    request.input(`p${index}`, param.value);
+  });
+  const result = await request.query(sql);
+  if (shouldClose) {
+    await targetPool.close();
+  }
+  return result.recordset;
+}
+
 module.exports = {
   getConnection,
   query,
+  queryOnDatabase,
   execute,
   testConnection,
   close,

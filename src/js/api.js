@@ -96,5 +96,9 @@ const api = {
     if (batchId) params.append('batchId', batchId);
     if (type) params.append('type', type);
     return await this.request(`/logs?${params.toString()}`);
+  },
+
+  async getAttrDict() {
+    return await this.request('/dict/attr');
   }
 };

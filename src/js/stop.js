@@ -4,10 +4,16 @@ document.getElementById('stop-batch-select').onchange = async (e) => {
   currentStopBatchId = e.target.value ? parseInt(e.target.value) : null;
   if (currentStopBatchId) {
     await loadStopItems();
+  } else {
+    document.querySelector('#stop-table tbody').innerHTML = '';
   }
 };
 
 document.getElementById('stop-import').onclick = () => {
+  if (!currentStopBatchId) {
+    showToast('请先选择批次', 'error');
+    return;
+  }
   document.getElementById('stop-file-input').click();
 };
 
