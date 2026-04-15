@@ -2,14 +2,14 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
-const apiRouter = require('./routes/api');
 
 const app = express();
 const PORT = 3000;
 
+const appPath = process.env.BULK_PRICING_APP_PATH || path.join(__dirname, '..', '..');
+
 function getLogDir() {
-  const config = require('./utils/config');
-  return config.getLogsPath();
+  return path.join(appPath, 'logs');
 }
 
 function writeLog(msg) {
@@ -25,6 +25,7 @@ function writeLog(msg) {
 }
 
 writeLog('=== Server starting ===');
+writeLog('App path: ' + appPath);
 
 app.use(cors());
 app.use(express.json());
@@ -35,6 +36,7 @@ app.use((req, res, next) => {
   next();
 });
 
+const apiRouter = require('./routes/api');
 app.use('/api', apiRouter);
 
 let server;
@@ -42,14 +44,15 @@ try {
   server = app.listen(PORT, '0.0.0.0', () => {
     writeLog(`Server running on port ${PORT}`);
     writeLog(`Log path: ${getLogDir()}`);
-    writeLog(`Config path: ${require('./utils/config').getConfigPath()}`);
   });
 } catch (err) {
   writeLog(`FATAL: Failed to start server: ${err.message}`);
+  console.error(err);
 }
 
 process.on('uncaughtException', (err) => {
   writeLog(`FATAL: Uncaught Exception: ${err.message}`);
+  console.error(err);
 });
 
 process.on('unhandledRejection', (reason, promise) => {

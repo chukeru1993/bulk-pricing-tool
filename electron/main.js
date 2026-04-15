@@ -1,8 +1,9 @@
 const { app, BrowserWindow, Menu } = require('electron');
 const path = require('path');
+const { fork } = require('child_process');
 
 let mainWindow;
-let expressServer;
+let serverProcess;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -53,15 +54,36 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
-  console.log('=== BulkPricingTool Starting ===');
+  console.log('=== Electron Starting ===');
   console.log('App path:', app.getAppPath());
-  console.log('isPackaged:', app.isPackaged);
+  console.log('User data:', app.getPath('userData'));
+  console.log('Is packaged:', app.isPackaged);
+
+  const serverPath = path.join(__dirname, '..', 'server', 'index.js');
+  console.log('Starting server from:', serverPath);
 
   try {
-    const serverPath = path.join(__dirname, '..', 'server', 'index.js');
-    console.log('Loading server from:', serverPath);
-    expressServer = require(serverPath);
-    console.log('Server started successfully');
+    serverProcess = fork(serverPath, [], {
+      stdio: 'pipe',
+      env: { ...process.env, BULK_PRICING_APP_PATH: app.getAppPath() }
+    });
+
+    serverProcess.stdout.on('data', (data) => {
+      console.log('[Server]', data.toString().trim());
+    });
+
+    serverProcess.stderr.on('data', (data) => {
+      console.error('[Server Error]', data.toString().trim());
+    });
+
+    serverProcess.on('error', (err) => {
+      console.error('Server process error:', err);
+    });
+
+    serverProcess.on('exit', (code) => {
+      console.log('Server exited with code:', code);
+    });
+
   } catch (err) {
     console.error('Failed to start server:', err);
   }
@@ -70,8 +92,8 @@ app.whenReady().then(() => {
 });
 
 app.on('window-all-closed', () => {
-  if (expressServer) {
-    expressServer.close();
+  if (serverProcess) {
+    serverProcess.kill();
   }
   app.quit();
 });

@@ -1,22 +1,14 @@
 const fs = require('fs');
 const path = require('path');
 
-function getAppPath() {
-  try {
-    const { app } = require('electron');
-    if (app && app.isPackaged) {
-      return path.dirname(app.getPath('exe'));
-    }
-  } catch (e) {}
-  return path.join(__dirname, '..', '..');
-}
+const appPath = process.env.BULK_PRICING_APP_PATH || path.join(__dirname, '..', '..');
 
 function getConfigPath() {
-  return path.join(getAppPath(), 'config.json');
+  return path.join(appPath, 'config.json');
 }
 
 function getLogsPath() {
-  return path.join(getAppPath(), 'logs');
+  return path.join(appPath, 'logs');
 }
 
 const defaultConfig = {
