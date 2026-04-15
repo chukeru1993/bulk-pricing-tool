@@ -320,6 +320,11 @@ input[type="text"].editable {
   min-width: 180px;
 }
 
+.data-table .col-price {
+  min-width: 80px;
+  max-width: 100px;
+}
+
 select.editable {
   border: 1px solid #ddd;
   padding: 5px;

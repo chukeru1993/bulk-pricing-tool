@@ -100,5 +100,13 @@ const api = {
 
   async getAttrDict() {
     return await this.request('/dict/attr');
+  },
+
+  async getDeptDict() {
+    return await this.request('/dict/dept');
+  },
+
+  async getUnitDict() {
+    return await this.request('/dict/unit');
   }
 };

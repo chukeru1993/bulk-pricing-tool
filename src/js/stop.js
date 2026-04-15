@@ -47,6 +47,12 @@ document.getElementById('stop-save').onclick = async () => {
     return;
   }
 
+  const invalid = items.find(item => !item.ProjectCode || !item.ProjectName);
+  if (invalid) {
+    showToast('项目编码和项目名称不能为空', 'error');
+    return;
+  }
+
   try {
     await api.saveStopItems(currentStopBatchId, items);
     showToast(`保存成功，共 ${items.length} 条`, 'success');

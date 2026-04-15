@@ -186,6 +186,38 @@ router.get('/dict/attr', async (req, res) => {
   }
 });
 
+router.get('/dict/dept', async (req, res) => {
+  try {
+    const result = await db.queryOnDatabase(
+      'SELECT ksjbxx_bmchr, ksjbxx_mcchr FROM [jc].[dbo].[jcjc_tb_ksjbxx]'
+    );
+    const items = result.map(row => ({
+      code: row.ksjbxx_bmchr.trim(),
+      name: row.ksjbxx_mcchr.trim()
+    }));
+    res.json(items);
+  } catch (error) {
+    logger.error(`GET /dict/dept - ${error.message}`, { stack: error.stack });
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get('/dict/unit', async (req, res) => {
+  try {
+    const result = await db.queryOnDatabase(
+      'SELECT fwxmdw_bmchr, fwxmdw_mcchr FROM [jc].[dbo].[jcjc_ta_fwxmdw]'
+    );
+    const items = result.map(row => ({
+      code: row.fwxmdw_bmchr.trim(),
+      name: row.fwxmdw_mcchr.trim()
+    }));
+    res.json(items);
+  } catch (error) {
+    logger.error(`GET /dict/unit - ${error.message}`, { stack: error.stack });
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.get('/add-items/:batchId', async (req, res) => {
   try {
     const { batchId } = req.params;

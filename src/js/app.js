@@ -19,8 +19,8 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     document.getElementById(`${btn.dataset.tab}-section`).classList.add('active');
 
     if (btn.dataset.tab === 'add') {
-      if (typeof loadAttrDict === 'function' && attrDictItems && attrDictItems.length === 0) {
-        loadAttrDict();
+      if (typeof loadAllDicts === 'function') {
+        loadAllDicts();
       }
     }
     if (btn.dataset.tab === 'record') {

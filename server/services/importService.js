@@ -1,4 +1,5 @@
 const db = require('../db/connection');
+const mssql = require('mssql');
 
 async function saveStopItems(batchId, items, importUser) {
   const pool = await db.getConnection();
@@ -15,8 +16,8 @@ async function saveStopItems(batchId, items, importUser) {
       const req = transaction.request();
       req.input('p0', batchId);
       req.input('p1', item.ProjectCode);
-      req.input('p2', item.ProjectName || '');
-      req.input('p3', item.StopReason || '');
+      req.input('p2', mssql.NVarChar, item.ProjectName || null);
+      req.input('p3', mssql.NVarChar, item.StopReason || null);
       req.input('p4', importUser);
       await req.query(
         `INSERT INTO Batch_Stop_Items (BatchID, ProjectCode, ProjectName, StopReason, ImportTime, ImportUser)
@@ -54,17 +55,17 @@ async function saveAddItems(batchId, items, importUser) {
       const req = transaction.request();
       req.input('p0', batchId);
       req.input('p1', item.ProjectCode);
-      req.input('p2', item.ProjectName || '');
-      req.input('p3', item.ExecuteDept || '');
-      req.input('p4', item.OutpatientAttr || '');
-      req.input('p5', item.InpatientAttr || '');
-      req.input('p6', item.ProvincePrice || 0);
-      req.input('p7', item.CityPrice || 0);
-      req.input('p8', item.CountyPrice || 0);
-      req.input('p9', item.Price || 0);
-      req.input('p10', item.PricingUnit || '');
-      req.input('p11', item.Spec || '');
-      req.input('p12', item.Model || '');
+      req.input('p2', mssql.NVarChar, item.ProjectName || null);
+      req.input('p3', mssql.NVarChar, item.ExecuteDept || null);
+      req.input('p4', mssql.NVarChar, item.OutpatientAttr || null);
+      req.input('p5', mssql.NVarChar, item.InpatientAttr || null);
+      req.input('p6', mssql.Decimal(18, 4), item.ProvincePrice || null);
+      req.input('p7', mssql.Decimal(18, 4), item.CityPrice || null);
+      req.input('p8', mssql.Decimal(18, 4), item.CountyPrice || null);
+      req.input('p9', mssql.Decimal(18, 4), item.Price || null);
+      req.input('p10', mssql.NVarChar, item.PricingUnit || null);
+      req.input('p11', mssql.NVarChar, item.Spec || null);
+      req.input('p12', mssql.NVarChar, item.Model || null);
       req.input('p13', importUser);
       await req.query(
         `INSERT INTO Batch_Add_Items (BatchID, ProjectCode, ProjectName, ExecuteDept, OutpatientAttr, InpatientAttr,
