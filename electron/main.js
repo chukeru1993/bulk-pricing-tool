@@ -1,9 +1,60 @@
 const { app, BrowserWindow, Menu } = require('electron');
 const path = require('path');
+const fs = require('fs');
 const { fork } = require('child_process');
 
 let mainWindow;
 let serverProcess;
+
+function getLogFile() {
+  const userDataPath = app.getPath('userData');
+  const logDir = path.join(userDataPath, 'logs');
+  if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir, { recursive: true });
+  }
+  return path.join(logDir, 'electron.log');
+}
+
+function writeLog(msg) {
+  const timestamp = new Date().toISOString();
+  const logMsg = `${timestamp} - ${msg}\n`;
+  const logFile = getLogFile();
+  try {
+    fs.appendFileSync(logFile, logMsg);
+  } catch (e) {}
+  console.log(msg);
+}
+
+app.whenReady().then(() => {
+  writeLog('=== Electron Starting ===');
+  writeLog('App path: ' + app.getAppPath());
+  writeLog('User data: ' + app.getPath('userData'));
+  writeLog('Is packaged: ' + app.isPackaged);
+
+  const serverPath = path.join(__dirname, '..', 'server', 'index.js');
+  writeLog('Server path: ' + serverPath);
+
+  try {
+    serverProcess = fork(serverPath, [], {
+      stdio: 'inherit',
+      env: { ...process.env, BULK_PRICING_APP_PATH: app.getAppPath() }
+    });
+
+    serverProcess.on('error', (err) => {
+      writeLog('Server fork error: ' + err.message);
+    });
+
+    serverProcess.on('exit', (code) => {
+      writeLog('Server exited with code: ' + code);
+    });
+
+  } catch (err) {
+    writeLog('Failed to fork server: ' + err.message);
+    writeLog(err.stack);
+  }
+
+  createWindow();
+});
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -22,6 +73,7 @@ function createWindow() {
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
+    writeLog('Window shown');
   });
 
   const menu = Menu.buildFromTemplate([
@@ -52,44 +104,6 @@ function createWindow() {
     mainWindow = null;
   });
 }
-
-app.whenReady().then(() => {
-  console.log('=== Electron Starting ===');
-  console.log('App path:', app.getAppPath());
-  console.log('User data:', app.getPath('userData'));
-  console.log('Is packaged:', app.isPackaged);
-
-  const serverPath = path.join(__dirname, '..', 'server', 'index.js');
-  console.log('Starting server from:', serverPath);
-
-  try {
-    serverProcess = fork(serverPath, [], {
-      stdio: 'pipe',
-      env: { ...process.env, BULK_PRICING_APP_PATH: app.getAppPath() }
-    });
-
-    serverProcess.stdout.on('data', (data) => {
-      console.log('[Server]', data.toString().trim());
-    });
-
-    serverProcess.stderr.on('data', (data) => {
-      console.error('[Server Error]', data.toString().trim());
-    });
-
-    serverProcess.on('error', (err) => {
-      console.error('Server process error:', err);
-    });
-
-    serverProcess.on('exit', (code) => {
-      console.log('Server exited with code:', code);
-    });
-
-  } catch (err) {
-    console.error('Failed to start server:', err);
-  }
-
-  createWindow();
-});
 
 app.on('window-all-closed', () => {
   if (serverProcess) {
