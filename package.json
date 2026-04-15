@@ -12,6 +12,7 @@
   "build": {
     "appId": "com.example.bulkpricingtool",
     "productName": "BulkPricingTool",
+    "asar": false,
     "directories": {
       "output": "dist"
     },
