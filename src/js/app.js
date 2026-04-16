@@ -7,7 +7,8 @@ function showToast(message, type = 'info') {
   toast.textContent = message;
   document.body.appendChild(toast);
 
-  setTimeout(() => toast.remove(), 3000);
+  const duration = type === 'warning' ? 6000 : 3000;
+  setTimeout(() => toast.remove(), duration);
 }
 
 document.querySelectorAll('.tab-btn').forEach(btn => {

@@ -1,4 +1,13 @@
 let currentStopBatchId = null;
+let stopDirty = false;
+
+function markStopDirty() {
+  stopDirty = true;
+}
+
+function clearStopDirty() {
+  stopDirty = false;
+}
 
 document.getElementById('stop-batch-select').onchange = async (e) => {
   currentStopBatchId = e.target.value ? parseInt(e.target.value) : null;
@@ -7,6 +16,7 @@ document.getElementById('stop-batch-select').onchange = async (e) => {
   } else {
     document.querySelector('#stop-table tbody').innerHTML = '';
   }
+  clearStopDirty();
 };
 
 document.getElementById('stop-import').onclick = () => {
@@ -24,6 +34,7 @@ document.getElementById('stop-file-input').onchange = async (e) => {
   try {
     const items = await excelHelper.readStopItems(file);
     renderStopTable(items);
+    markStopDirty();
     showToast(`成功导入 ${items.length} 条记录`, 'success');
   } catch (error) {
     showToast('导入失败: ' + error.message, 'error');
@@ -55,6 +66,7 @@ document.getElementById('stop-save').onclick = async () => {
 
   try {
     await api.saveStopItems(currentStopBatchId, items);
+    clearStopDirty();
     showToast(`保存成功，共 ${items.length} 条`, 'success');
   } catch (error) {
     showToast('保存失败: ' + error.message, 'error');
@@ -67,12 +79,18 @@ document.getElementById('stop-execute').onclick = async () => {
     return;
   }
 
+  if (stopDirty) {
+    showToast('数据已修改，请先保存再执行', 'error');
+    return;
+  }
+
   if (!confirm('确定要执行停用操作吗？')) return;
 
   try {
     await api.executeStop(currentStopBatchId);
     showToast('执行成功', 'success');
     await loadStopItems();
+    clearStopDirty();
   } catch (error) {
     showToast('执行失败: ' + error.message, 'error');
   }
@@ -84,6 +102,7 @@ async function loadStopItems() {
   try {
     const items = await api.getStopItems(currentStopBatchId);
     renderStopTable(items);
+    clearStopDirty();
   } catch (error) {
     showToast('加载停用项目失败: ' + error.message, 'error');
   }
@@ -120,3 +139,6 @@ function getStopItemsFromTable() {
   });
   return items;
 }
+
+document.querySelector('#stop-table').addEventListener('input', markStopDirty);
+document.querySelector('#stop-table').addEventListener('change', markStopDirty);

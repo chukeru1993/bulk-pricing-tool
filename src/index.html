@@ -10,7 +10,10 @@
   <div class="container">
     <header class="header">
       <h1>批量导入项目调价工具</h1>
-      <button id="open-config-btn" class="header-btn">数据库配置</button>
+      <div class="header-actions">
+        <button id="open-settings-btn" class="header-btn">系统设置</button>
+        <button id="open-config-btn" class="header-btn">数据库配置</button>
+      </div>
     </header>
 
     <nav class="tabs">
@@ -198,9 +201,27 @@
     </div>
   </div>
 
+  <!-- 系统设置弹窗 -->
+  <div id="settings-dialog" class="modal">
+    <div class="modal-content modal-lg">
+      <h3>系统设置</h3>
+      <div class="settings-section">
+        <h4>新增项目 - 必填字段设置</h4>
+        <p class="settings-hint">勾选的字段在保存时不能为空</p>
+        <div id="required-fields-checkboxes" class="checkbox-grid"></div>
+      </div>
+      <div class="form-actions">
+        <button id="settings-save" class="btn btn-primary">保存</button>
+        <button id="settings-cancel" class="btn">取消</button>
+      </div>
+      <div id="settings-message" class="config-message"></div>
+    </div>
+  </div>
+
   <script src="js/xlsx.full.min.js"></script>
   <script src="js/api.js"></script>
   <script src="js/config.js"></script>
+  <script src="js/settings.js"></script>
   <script src="js/excel.js"></script>
   <script src="js/batch.js"></script>
   <script src="js/stop.js"></script>

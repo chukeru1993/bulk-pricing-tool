@@ -5,5 +5,13 @@
   "password": "YourStrong@Passw0rd",
   "port": 1433,
   "encrypt": false,
-  "trustServerCertificate": true
+  "trustServerCertificate": true,
+  "requiredFields": [
+    "ProjectCode",
+    "ProjectName",
+    "ExecuteDept",
+    "OutpatientAttr",
+    "InpatientAttr",
+    "PricingUnit"
+  ]
 }

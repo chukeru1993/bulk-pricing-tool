@@ -112,5 +112,16 @@ const api = {
 
   async getMedicalDict() {
     return await this.request('/dict/medical');
+  },
+
+  async getRequiredFields() {
+    return await this.request('/config/required-fields');
+  },
+
+  async saveRequiredFields(requiredFields) {
+    return await this.request('/config/required-fields', {
+      method: 'POST',
+      body: JSON.stringify({ requiredFields })
+    });
   }
 };

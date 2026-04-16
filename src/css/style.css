@@ -45,6 +45,11 @@ body {
   background: #2980b9;
 }
 
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
 .tabs {
   background: #34495e;
   display: flex;
@@ -300,6 +305,11 @@ body {
   color: white;
   border-radius: 4px;
   z-index: 2000;
+  max-width: 600px;
+  max-height: 200px;
+  overflow-y: auto;
+  word-break: break-all;
+  line-height: 1.5;
 }
 
 .toast.success {
@@ -308,6 +318,10 @@ body {
 
 .toast.error {
   background: #e74c3c;
+}
+
+.toast.warning {
+  background: #f39c12;
 }
 
 input[type="text"].editable {
@@ -331,4 +345,39 @@ select.editable {
   width: 100%;
   font-size: 14px;
   background: #fff;
+}
+
+.settings-section h4 {
+  margin-bottom: 8px;
+  font-size: 15px;
+}
+
+.settings-hint {
+  color: #888;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.checkbox-grid label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.checkbox-grid input[type="checkbox"] {
+  width: auto;
+}
+
+input.editable.field-error,
+select.editable.field-error {
+  border: 2px solid #e74c3c;
+  background: #fff5f5;
 }

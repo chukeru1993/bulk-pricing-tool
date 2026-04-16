@@ -31,7 +31,8 @@ const defaultConfig = {
   password: '',
   port: 1433,
   encrypt: false,
-  trustServerCertificate: true
+  trustServerCertificate: true,
+  requiredFields: ['ProjectCode', 'ProjectName', 'PricingUnit']
 };
 
 function loadConfig() {

@@ -63,6 +63,30 @@ router.post('/config', async (req, res) => {
   }
 });
 
+router.get('/config/required-fields', (req, res) => {
+  try {
+    const cfg = config.getConfig();
+    res.json({ requiredFields: cfg.requiredFields || ['ProjectCode', 'ProjectName', 'PricingUnit'] });
+  } catch (error) {
+    logger.error(`GET /config/required-fields - ${error.message}`, { stack: error.stack });
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/config/required-fields', (req, res) => {
+  try {
+    const { requiredFields } = req.body;
+    if (!Array.isArray(requiredFields)) {
+      return res.status(400).json({ error: 'requiredFields must be an array' });
+    }
+    config.updateConfig({ requiredFields });
+    res.json({ success: true, requiredFields });
+  } catch (error) {
+    logger.error(`POST /config/required-fields - ${error.message}`, { stack: error.stack });
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.post('/config/test', async (req, res) => {
   try {
     const { server, database, user, password, port, encrypt, trustServerCertificate } = req.body;

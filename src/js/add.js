@@ -1,5 +1,14 @@
 let currentAddBatchId = null;
+let addDirty = false;
 let dictCache = { attr: [], dept: [], unit: [], medical: [] };
+
+function markAddDirty() {
+  addDirty = true;
+}
+
+function clearAddDirty() {
+  addDirty = false;
+}
 
 async function loadAllDicts() {
   const loaders = [
@@ -36,16 +45,104 @@ function resolveDictCode(dictKey, value) {
   return found ? found.code : null;
 }
 
+const DICT_FIELD_LABELS = {
+  ExecuteDept: '执行科室',
+  OutpatientAttr: '门诊归属',
+  InpatientAttr: '住院归属',
+  MedicalCategory: '病案费用大类',
+  MedicalSubCategory: '病案费用小类',
+  PricingUnit: '计价单位'
+};
+
+const DICT_FIELD_MAP = {
+  ExecuteDept: 'dept',
+  OutpatientAttr: 'attr',
+  InpatientAttr: 'attr',
+  MedicalCategory: 'medical',
+  MedicalSubCategory: 'medical',
+  PricingUnit: 'unit'
+};
+
+const FIELD_ELEMENT_MAP = {
+  ProjectCode: { type: 'input', index: 0 },
+  ProjectName: { type: 'input', index: 1 },
+  ExecuteDept: { type: 'select', index: 0 },
+  OutpatientAttr: { type: 'select', index: 1 },
+  InpatientAttr: { type: 'select', index: 2 },
+  MedicalCategory: { type: 'select', index: 3 },
+  MedicalSubCategory: { type: 'select', index: 4 },
+  ProvincePrice: { type: 'input', index: 2 },
+  CityPrice: { type: 'input', index: 3 },
+  CountyPrice: { type: 'input', index: 4 },
+  Price: { type: 'input', index: 5 },
+  PricingUnit: { type: 'select', index: 5 },
+  Spec: { type: 'input', index: 6 },
+  Model: { type: 'input', index: 7 }
+};
+
 function convertImportItems(items) {
-  return items.map(item => ({
-    ...item,
-    ExecuteDept: resolveDictCode('dept', item.ExecuteDept),
-    OutpatientAttr: resolveDictCode('attr', item.OutpatientAttr),
-    InpatientAttr: resolveDictCode('attr', item.InpatientAttr),
-    MedicalCategory: resolveDictCode('medical', item.MedicalCategory),
-    MedicalSubCategory: resolveDictCode('medical', item.MedicalSubCategory),
-    PricingUnit: resolveDictCode('unit', item.PricingUnit)
-  }));
+  const failedCounts = {};
+  const converted = items.map(item => {
+    const newItem = { ...item };
+    for (const [field, dictKey] of Object.entries(DICT_FIELD_MAP)) {
+      const original = item[field];
+      if (original) {
+        const code = resolveDictCode(dictKey, original);
+        if (code === null && original) {
+          failedCounts[field] = (failedCounts[field] || 0) + 1;
+        }
+        newItem[field] = code;
+      }
+    }
+    return newItem;
+  });
+
+  const warnings = [];
+  for (const [field, count] of Object.entries(failedCounts)) {
+    warnings.push(`${DICT_FIELD_LABELS[field]}有${count}条未能正常从名称转编码`);
+  }
+
+  return { items: converted, warnings };
+}
+
+function clearFieldErrors() {
+  document.querySelectorAll('#add-table .field-error').forEach(el => {
+    el.classList.remove('field-error');
+  });
+}
+
+function validateRequiredFields(requiredFields) {
+  const emptyLabels = [];
+  const rows = document.querySelectorAll('#add-table tbody tr');
+
+  rows.forEach(row => {
+    const inputs = row.querySelectorAll('input');
+    const selects = row.querySelectorAll('select');
+
+    requiredFields.forEach(field => {
+      const mapping = FIELD_ELEMENT_MAP[field];
+      if (!mapping) return;
+
+      let element;
+      if (mapping.type === 'input') {
+        element = inputs[mapping.index];
+      } else {
+        element = selects[mapping.index];
+      }
+      if (!element) return;
+
+      const value = element.value.trim();
+      if (!value) {
+        element.classList.add('field-error');
+        const label = window.getFieldLabel ? window.getFieldLabel(field) : field;
+        if (!emptyLabels.includes(label)) {
+          emptyLabels.push(label);
+        }
+      }
+    });
+  });
+
+  return emptyLabels;
 }
 
 document.getElementById('add-batch-select').onchange = async (e) => {
@@ -56,6 +153,7 @@ document.getElementById('add-batch-select').onchange = async (e) => {
   } else {
     document.querySelector('#add-table tbody').innerHTML = '';
   }
+  clearAddDirty();
 };
 
 document.getElementById('add-import').onclick = () => {
@@ -73,9 +171,14 @@ document.getElementById('add-file-input').onchange = async (e) => {
   try {
     const rawItems = await excelHelper.readAddItems(file);
     await loadAllDicts();
-    const items = convertImportItems(rawItems);
+    const { items, warnings } = convertImportItems(rawItems);
     renderAddTable(items);
-    showToast(`成功导入 ${items.length} 条记录`, 'success');
+    markAddDirty();
+    let msg = `成功导入 ${items.length} 条记录`;
+    if (warnings.length > 0) {
+      msg += '，注意：' + warnings.join('；') + '……';
+    }
+    showToast(msg, warnings.length > 0 ? 'warning' : 'success');
   } catch (error) {
     showToast('导入失败: ' + error.message, 'error');
   }
@@ -98,9 +201,12 @@ document.getElementById('add-save').onclick = async () => {
     return;
   }
 
-  const missingField = items.find(item => !item.ProjectCode || !item.ProjectName);
-  if (missingField) {
-    showToast('项目编码和项目名称不能为空', 'error');
+  clearFieldErrors();
+
+  const requiredFields = window.getRequiredFields ? window.getRequiredFields() : ['ProjectCode', 'ProjectName'];
+  const emptyFieldLabels = validateRequiredFields(requiredFields);
+  if (emptyFieldLabels.length > 0) {
+    showToast(`${emptyFieldLabels.join('、')}不能为空`, 'error');
     return;
   }
 
@@ -117,6 +223,7 @@ document.getElementById('add-save').onclick = async () => {
 
   try {
     await api.saveAddItems(currentAddBatchId, items);
+    clearAddDirty();
     showToast(`保存成功，共 ${items.length} 条`, 'success');
   } catch (error) {
     showToast('保存失败: ' + error.message, 'error');
@@ -126,6 +233,11 @@ document.getElementById('add-save').onclick = async () => {
 document.getElementById('add-execute').onclick = async () => {
   if (!currentAddBatchId) {
     showToast('请先选择批次', 'error');
+    return;
+  }
+
+  if (addDirty) {
+    showToast('数据已修改，请先保存再执行', 'error');
     return;
   }
 
@@ -146,6 +258,7 @@ async function loadAddItems() {
   try {
     const items = await api.getAddItems(currentAddBatchId);
     renderAddTable(items);
+    clearAddDirty();
   } catch (error) {
     showToast('加载新增项目失败: ' + error.message, 'error');
   }
@@ -210,3 +323,6 @@ function getAddItemsFromTable() {
 }
 
 loadAllDicts();
+
+document.querySelector('#add-table').addEventListener('input', markAddDirty);
+document.querySelector('#add-table').addEventListener('change', markAddDirty);
