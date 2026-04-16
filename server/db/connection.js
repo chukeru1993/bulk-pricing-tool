@@ -14,7 +14,8 @@ function getDbConfig() {
     driver: 'ODBC Driver 17 for SQL Server',
     options: {
       encrypt: cfg.encrypt || false,
-      trustServerCertificate: cfg.trustServerCertificate || true
+      trustServerCertificate: cfg.trustServerCertificate || true,
+      requestTimeout: 300000 // 300秒超时
     }
   };
 }
