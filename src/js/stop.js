@@ -97,8 +97,8 @@ function renderStopTable(items) {
     const row = document.createElement('tr');
     row.innerHTML = `
       <td><input type="text" class="editable" value="${item.ProjectCode || ''}"></td>
-      <td><input type="text" class="editable" value="${item.ProjectName || ''}"></td>
-      <td><input type="text" class="editable" value="${item.StopReason || ''}"></td>
+      <td><input type="text" class="editable" value="${item.ProjectName ?? ''}"></td>
+      <td><input type="text" class="editable" value="${item.StopReason ?? ''}"></td>
     `;
     tbody.appendChild(row);
   });
@@ -110,10 +110,11 @@ function getStopItemsFromTable() {
     const inputs = row.querySelectorAll('input');
     const projectCode = inputs[0].value.trim();
     if (projectCode) {
+      const strOrNull = (v) => v || null;
       items.push({
         ProjectCode: projectCode,
-        ProjectName: inputs[1].value.trim(),
-        StopReason: inputs[2].value.trim()
+        ProjectName: strOrNull(inputs[1].value.trim()),
+        StopReason: strOrNull(inputs[2].value.trim())
       });
     }
   });

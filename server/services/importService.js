@@ -59,6 +59,8 @@ async function saveAddItems(batchId, items, importUser) {
       req.input('p3', mssql.NVarChar, item.ExecuteDept || null);
       req.input('p4', mssql.NVarChar, item.OutpatientAttr || null);
       req.input('p5', mssql.NVarChar, item.InpatientAttr || null);
+      req.input('p5a', mssql.NVarChar, item.MedicalCategory || null);
+      req.input('p5b', mssql.NVarChar, item.MedicalSubCategory || null);
       req.input('p6', mssql.Decimal(18, 4), item.ProvincePrice || null);
       req.input('p7', mssql.Decimal(18, 4), item.CityPrice || null);
       req.input('p8', mssql.Decimal(18, 4), item.CountyPrice || null);
@@ -69,8 +71,9 @@ async function saveAddItems(batchId, items, importUser) {
       req.input('p13', importUser);
       await req.query(
         `INSERT INTO Batch_Add_Items (BatchID, ProjectCode, ProjectName, ExecuteDept, OutpatientAttr, InpatientAttr,
+         MedicalCategory, MedicalSubCategory,
          ProvincePrice, CityPrice, CountyPrice, Price, PricingUnit, Spec, Model, ImportTime, ImportUser)
-         VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, GETDATE(), @p13)`
+         VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p5a, @p5b, @p6, @p7, @p8, @p9, @p10, @p11, @p12, GETDATE(), @p13)`
       );
     }
 
@@ -85,6 +88,7 @@ async function saveAddItems(batchId, items, importUser) {
 async function getAddItems(batchId) {
   return await db.query(
     `SELECT ItemID, ProjectCode, ProjectName, ExecuteDept, OutpatientAttr, InpatientAttr,
+     MedicalCategory, MedicalSubCategory,
      ProvincePrice, CityPrice, CountyPrice, Price, PricingUnit, Spec, Model
      FROM Batch_Add_Items WHERE BatchID = @p0`,
     [{ value: batchId }]

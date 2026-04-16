@@ -218,6 +218,22 @@ router.get('/dict/unit', async (req, res) => {
   }
 });
 
+router.get('/dict/medical', async (req, res) => {
+  try {
+    const result = await db.queryOnDatabase(
+      'SELECT bafylx_bmchr, bafylx_mcchr FROM [jc].[dbo].[jcjc_ta_bafylx]'
+    );
+    const items = result.map(row => ({
+      code: row.bafylx_bmchr.trim(),
+      name: row.bafylx_mcchr.trim()
+    }));
+    res.json(items);
+  } catch (error) {
+    logger.error(`GET /dict/medical - ${error.message}`, { stack: error.stack });
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.get('/add-items/:batchId', async (req, res) => {
   try {
     const { batchId } = req.params;

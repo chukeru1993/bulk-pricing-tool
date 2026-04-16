@@ -1,11 +1,12 @@
 let currentAddBatchId = null;
-let dictCache = { attr: [], dept: [], unit: [] };
+let dictCache = { attr: [], dept: [], unit: [], medical: [] };
 
 async function loadAllDicts() {
   const loaders = [
     { key: 'attr', fn: () => api.getAttrDict() },
     { key: 'dept', fn: () => api.getDeptDict() },
-    { key: 'unit', fn: () => api.getUnitDict() }
+    { key: 'unit', fn: () => api.getUnitDict() },
+    { key: 'medical', fn: () => api.getMedicalDict() }
   ];
   for (const { key, fn } of loaders) {
     if (dictCache[key].length === 0) {
@@ -41,6 +42,8 @@ function convertImportItems(items) {
     ExecuteDept: resolveDictCode('dept', item.ExecuteDept),
     OutpatientAttr: resolveDictCode('attr', item.OutpatientAttr),
     InpatientAttr: resolveDictCode('attr', item.InpatientAttr),
+    MedicalCategory: resolveDictCode('medical', item.MedicalCategory),
+    MedicalSubCategory: resolveDictCode('medical', item.MedicalSubCategory),
     PricingUnit: resolveDictCode('unit', item.PricingUnit)
   }));
 }
@@ -162,6 +165,8 @@ async function renderAddTable(items) {
       <td><select class="editable">${buildSelectOptions('dept', item.ExecuteDept)}</select></td>
       <td><select class="editable">${buildSelectOptions('attr', item.OutpatientAttr)}</select></td>
       <td><select class="editable">${buildSelectOptions('attr', item.InpatientAttr)}</select></td>
+      <td><select class="editable">${buildSelectOptions('medical', item.MedicalCategory)}</select></td>
+      <td><select class="editable">${buildSelectOptions('medical', item.MedicalSubCategory)}</select></td>
       <td><input type="text" class="editable" value="${item.ProvincePrice ?? ''}"></td>
       <td><input type="text" class="editable" value="${item.CityPrice ?? ''}"></td>
       <td><input type="text" class="editable" value="${item.CountyPrice ?? ''}"></td>
@@ -189,11 +194,13 @@ function getAddItemsFromTable() {
         ExecuteDept: strOrNull(selects[0].value),
         OutpatientAttr: strOrNull(selects[1].value),
         InpatientAttr: strOrNull(selects[2].value),
+        MedicalCategory: strOrNull(selects[3].value),
+        MedicalSubCategory: strOrNull(selects[4].value),
         ProvincePrice: numOrNull(inputs[2].value),
         CityPrice: numOrNull(inputs[3].value),
         CountyPrice: numOrNull(inputs[4].value),
         Price: numOrNull(inputs[5].value),
-        PricingUnit: strOrNull(selects[3].value),
+        PricingUnit: strOrNull(selects[5].value),
         Spec: strOrNull(inputs[6].value.trim()),
         Model: strOrNull(inputs[7].value.trim())
       });

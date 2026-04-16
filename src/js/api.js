@@ -108,5 +108,9 @@ const api = {
 
   async getUnitDict() {
     return await this.request('/dict/unit');
+  },
+
+  async getMedicalDict() {
+    return await this.request('/dict/medical');
   }
 };

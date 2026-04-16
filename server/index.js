@@ -32,7 +32,7 @@ writeLog('Config path: ' + config.getConfigPath());
 writeLog('Logs path: ' + config.getLogsPath());
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, '..', 'src')));
 
 app.use((req, res, next) => {
