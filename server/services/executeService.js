@@ -8,13 +8,22 @@ async function executeBatchStop(batchId) {
     await procedures.executeBatchStop(batchId);
     await batchService.updateBatchStatus(batchId, '已完成');
 
-    await db.query(
-      `INSERT INTO Execution_Log (BatchID, ExecutionType, Status, Message, SuccessCount, FailCount)
-       VALUES (@p0, N'Stop', N'Success', N'执行成功', 0, 0)`,
+    // 获取影响行数
+    const affectCountResult = await db.query(
+      `SELECT COUNT(1) AS count FROM jcjc_tb_fwxmxx_yy WITH(nolock) 
+       WHERE fwxmxx_yy_mzsybzchr = '0' AND fwxmxx_yy_zysybzchr = '0' 
+       AND fwxmxx_bz_bmchr IN (SELECT ProjectCode FROM Batch_Stop_Items WHERE BatchID = @p0)`,
       [{ value: batchId }]
     );
+    const affectCount = affectCountResult[0]?.count || 0;
 
-    return { success: true, message: '执行成功' };
+    await db.query(
+      `INSERT INTO Execution_Log (BatchID, ExecutionType, Status, Message, SuccessCount, FailCount)
+       VALUES (@p0, N'Stop', N'Success', N'执行成功', @p1, 0)`,
+      [{ value: batchId }, { value: affectCount }]
+    );
+
+    return { success: true, message: '执行成功', affectCount };
   } catch (error) {
     await batchService.updateBatchStatus(batchId, '取消');
 
@@ -34,13 +43,21 @@ async function executeBatchAdd(batchId) {
     await procedures.executeBatchAdd(batchId);
     await batchService.updateBatchStatus(batchId, '已完成');
 
-    await db.query(
-      `INSERT INTO Execution_Log (BatchID, ExecutionType, Status, Message, SuccessCount, FailCount)
-       VALUES (@p0, N'Add', N'Success', N'执行成功', 0, 0)`,
+    // 获取影响行数
+    const affectCountResult = await db.query(
+      `SELECT COUNT(1) AS count FROM jcjc_tb_fwxmxx_bz WITH(nolock) 
+       WHERE fwxmxx_bz_bmchr IN (SELECT ProjectCode FROM Batch_Add_Items WHERE BatchID = @p0)`,
       [{ value: batchId }]
     );
+    const affectCount = affectCountResult[0]?.count || 0;
 
-    return { success: true, message: '执行成功' };
+    await db.query(
+      `INSERT INTO Execution_Log (BatchID, ExecutionType, Status, Message, SuccessCount, FailCount)
+       VALUES (@p0, N'Add', N'Success', N'执行成功', @p1, 0)`,
+      [{ value: batchId }, { value: affectCount }]
+    );
+
+    return { success: true, message: '执行成功', affectCount };
   } catch (error) {
     await batchService.updateBatchStatus(batchId, '取消');
 

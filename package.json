@@ -1,6 +1,6 @@
 {
   "name": "bulk-pricing-tool",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "批量导入项目调价工具",
   "author": "chukeru",
   "main": "electron/main.js",
@@ -26,7 +26,9 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ]
     },

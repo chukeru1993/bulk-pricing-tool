@@ -26,7 +26,6 @@ function renderRecordTable(logs) {
       <td>${log.Status}</td>
       <td>${log.Message || ''}</td>
       <td>${log.SuccessCount || 0}</td>
-      <td>${log.FailCount || 0}</td>
     `;
     tbody.appendChild(row);
   });
