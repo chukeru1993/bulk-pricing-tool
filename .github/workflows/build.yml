@@ -1,31 +1,47 @@
+# 工作流名称：Windows EXE 构建
 name: Build Windows EXE
 
+# 触发条件
 on:
+  # 当主分支有代码推送时自动触发
   push:
     branches: [main]
+  # 支持手动触发工作流
   workflow_dispatch:
 
+# 定义作业
 jobs:
+  # 构建作业
   build:
+    # 在最新的 Windows 环境中运行
     runs-on: windows-latest
 
+    # 构建步骤
     steps:
+      # 步骤 1: 检出代码仓库
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 步骤 2: 配置 Node.js 环境
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
+          # 使用 Node.js 18 版本
           node-version: '18'
 
+      # 步骤 3: 安装项目依赖
       - name: Install dependencies
         run: npm install
 
+      # 步骤 4: 构建 Electron 应用（打包为 Windows EXE）
       - name: Build Electron app
         run: npm run build
 
+      # 步骤 5: 上传构建产物（dist 目录）
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
+          # 制品名称
           name: windows-x64
+          # 上传的路径
           path: dist/
